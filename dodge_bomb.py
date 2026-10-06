@@ -1,6 +1,7 @@
 import os
 import random
 import sys
+import time
 import pygame as pg
 
 
@@ -27,6 +28,30 @@ def cheak_bound(rect: pg.Rect) -> tuple[bool, bool]:
         tate = False
     return yoko, tate
 
+def gameover(screen: pg.Surface) -> None:
+    # 1. 半透明用の黒いSurfaceを作成
+    gm_img = pg.Surface((1100, 650))
+    gm_img.fill((0, 0, 0))  # Surface全体を黒で塗りつぶす
+    gm_img.set_alpha(100)  # 透明度を設定（0:完全透明〜255:完全不透明）
+
+    # 2. 「Game Over」文字列Surfaceの作成
+    gm_fonto = pg.font.Font(None, 80)
+    gm_txt = gm_fonto.render("Game Over", True, (255, 255, 255))
+
+    # 3. こうかとん画像の読み込み
+    kk_img2 = pg.image.load("fig/8.png")
+
+    # 4. 各パーツをメイン画面（screen）に描画
+    screen.blit(gm_img, [0, 0])  # 半透明の黒背景を画面全体に重ねる
+    screen.blit(gm_txt, [400, 300])  # 文字を描画
+    screen.blit(kk_img2, [330, 300])  # 左側のこうかとん
+    screen.blit(kk_img2, [730, 300])  # 右側のこうかとん
+
+    # 5. 画面更新と停止処理
+    pg.display.update()
+    time.sleep(5)
+
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -50,6 +75,7 @@ def main():
         screen.blit(bg_img, [0, 0]) 
 
         if kk_rct.colliderect(bb_rct):
+            gameover(screen)
             print("game over")
             return
 

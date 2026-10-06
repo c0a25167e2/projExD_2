@@ -51,6 +51,16 @@ def gameover(screen: pg.Surface) -> None:
     pg.display.update()
     time.sleep(5)
 
+def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:  # 爆弾の拡大、加速
+    bb_imgs = []
+    for r in range(1, 11):
+        bb_img = pg.Surface((20*r, 20*r))
+        pg.draw.circle(bb_img, (255, 0, 0), (10*r, 10*r), 10*r)
+        bb_imgs.append(bb_img)
+        bb_accs = [a for a in range(1, 11)]
+    return bb_imgs,bb_accs
+
+
 
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
@@ -66,6 +76,7 @@ def main():
     bb_rct.centerx = random.randint(0, WIDTH)  # 横方向乱数
     bb_rct.centery = random.randint(0, HEIGHT)  # 縦方向乱数
     vx , vy = +5, +5
+    bb_imgs, bb_accs = init_bb_imgs()
     clock = pg.time.Clock()
     tmr = 0
     while True:
@@ -89,6 +100,14 @@ def main():
         #    sum_mv[0] -= 5
         #if key_lst[pg.K_RIGHT]:
         #    sum_mv[0] += 5
+
+        avx = vx*bb_accs[min(tmr//500, 9)]
+        avy = vy*bb_accs[min(tmr//500, 9)]
+        bb_img = bb_imgs[min(tmr//500, 9)]
+        bb_img.set_colorkey((0,0,0))
+        bb_rct.width = bb_img.get_rect().width
+        bb_rct.height = bb_img.get_rect().height
+
         for k,tpl in DELTA.items():
             if key_lst[k]:
                 sum_mv[0] += tpl[0]  # 横方向移動
@@ -98,7 +117,7 @@ def main():
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1])
         screen.blit(kk_img, kk_rct)
 
-        bb_rct.move_ip(vx ,vy)
+        bb_rct.move_ip(avx ,avy)
         yoko, tate = cheak_bound(bb_rct)
         if not yoko:
             vx *= -1

@@ -1,3 +1,4 @@
+import math
 import os
 import random
 import sys
@@ -81,6 +82,25 @@ def get_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
     }
     return kk_dict
 
+def calc_orientation(org: pg.Rect, dst: pg.Rect, current_xy: tuple[float, float])-> tuple[float, float]:
+    # 差ベクトルの計算
+    dx = dst.centerx - org.centerx
+    dy = dst.centery - org.centery
+
+    # 距離（ノルム）の計算
+    norm = math.hypot(dx, dy)  # math.sqrt(dx**2 + dy**2) と同じ
+
+    # 距離が300未満の場合は慣性（直前の方向）を維持
+    if norm < 300:
+        return current_xy
+
+    # ノルムが sqrt(50) になるように正規化
+    target_norm = math.sqrt(50)
+    vx = (dx / norm) * target_norm
+    vy = (dy / norm) * target_norm
+
+    return vx, vy
+
 
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
@@ -121,7 +141,7 @@ def main():
         #    sum_mv[0] -= 5
         #if key_lst[pg.K_RIGHT]:
         #    sum_mv[0] += 5
-
+        vx, vy = calc_orientation(bb_rct, kk_rct, (vx, vy))
         avx = vx*bb_accs[min(tmr//500, 9)]
         avy = vy*bb_accs[min(tmr//500, 9)]
         bb_img = bb_imgs[min(tmr//500, 9)]

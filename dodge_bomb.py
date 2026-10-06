@@ -60,6 +60,26 @@ def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:  # 爆弾の拡大、�
         bb_accs = [a for a in range(1, 11)]
     return bb_imgs,bb_accs
 
+def get_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
+    # 1. ベースとなるこうかとん画像を読み込み
+    kk_img = pg.image.load("fig/3.png")
+
+    # 左右反転した画像（右向き用）を作成
+    kk_img_flip = pg.transform.flip(kk_img, True, False)
+
+    # 2. 移動量タプル : rotozoom(画像, 角度, 拡大率) の辞書を作成
+    kk_dict = {
+        (0, 0): pg.transform.rotozoom(kk_img, 0, 0.9),  # 移動なし（左向き）
+        (+5, 0): pg.transform.rotozoom(kk_img_flip, 0, 0.9),  # 右
+        (+5, -5): pg.transform.rotozoom(kk_img_flip, 45, 0.9),  # 右上
+        (0, -5): pg.transform.rotozoom(kk_img_flip, 90, 0.9),  # 上
+        (-5, -5): pg.transform.rotozoom(kk_img, -45, 0.9),  # 左上
+        (-5, 0): pg.transform.rotozoom(kk_img, 0, 0.9),  # 左
+        (-5, +5): pg.transform.rotozoom(kk_img, 45, 0.9),  # 左下
+        (0, +5): pg.transform.rotozoom(kk_img_flip, -90, 0.9),  # 下
+        (+5, +5): pg.transform.rotozoom(kk_img_flip, -45, 0.9),  # 右下
+    }
+    return kk_dict
 
 
 def main():
@@ -67,6 +87,7 @@ def main():
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     bg_img = pg.image.load("fig/pg_bg.jpg")    
     kk_img = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
+    kk_imgs = get_kk_imgs()  # 辞書を取得しておく
     kk_rct = kk_img.get_rect()
     kk_rct.center = 300, 200
     bb_img = pg.Surface((20,20))  # 空のSurface
@@ -113,6 +134,7 @@ def main():
                 sum_mv[0] += tpl[0]  # 横方向移動
                 sum_mv[1] += tpl[1]  # 縦方向移動
         kk_rct.move_ip(sum_mv)
+        kk_img = kk_imgs[tuple(sum_mv)]
         if cheak_bound(kk_rct) != (True, True):
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1])
         screen.blit(kk_img, kk_rct)
